@@ -35,7 +35,7 @@ const HeroSection = () => {
           <div className="flex justify-center">
             <Input
               type="text"
-              value="search query"
+              value=""
               placeholder="Search by city, neighborhood or address"
               className="w-full max-w-lg rounded-none rounded-l-xl border-none bg-white! h-12"
             />
