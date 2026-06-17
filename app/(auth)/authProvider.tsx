@@ -2,8 +2,6 @@
 
 import { Amplify } from "aws-amplify";
 
-import "@aws-amplify/ui-react/styles.css";
-
 import {
   Authenticator,
   Heading,
@@ -16,12 +14,21 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+const userPoolId = process.env.NEXT_PUBLIC_AWS_COGNITO_USER_POOL_ID;
+const userPoolClientId =
+  process.env.NEXT_PUBLIC_AWS_COGNITO_USER_POOL_CLIENT_ID;
+
+if (!userPoolId || !userPoolClientId) {
+  throw new Error(
+    "Missing NEXT_PUBLIC_AWS_COGNITO_USER_POOL_ID or NEXT_PUBLIC_AWS_COGNITO_USER_POOL_CLIENT_ID",
+  );
+}
+
 Amplify.configure({
   Auth: {
     Cognito: {
-      userPoolId: process.env.NEXT_PUBLIC_AWS_COGNITO_USER_POOL_ID!,
-      userPoolClientId:
-        process.env.NEXT_PUBLIC_AWS_COGNITO_USER_POOL_CLIENT_ID!,
+      userPoolId,
+      userPoolClientId,
     },
   },
 });
@@ -53,6 +60,7 @@ const components = {
             Don't have an account?{" "}
             <button
               onClick={toSignUp}
+              type="button"
               className="text-primary font-medium hover:underline hover:text-primary-700! bg-transparent border-none cursor-pointer! p-0"
             >
               Sign Up
@@ -110,6 +118,7 @@ const components = {
           <p className="text-muted-foreground">
             Already have an account?{" "}
             <button
+              type="button"
               onClick={toSignIn}
               className="text-primary font-medium hover:underline hover:text-primary-700! bg-transparent border-none cursor-pointer! p-0"
             >
@@ -193,7 +202,13 @@ const Auth = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="h-full">
       <Authenticator
-        initialState={pathname.includes("/signin") ? "signIn" : "signUp"}
+        initialState={
+          pathname.includes("/signin")
+            ? "signIn"
+            : pathname.includes("/forgot-password")
+              ? "forgotPassword"
+              : "signUp"
+        }
         components={components}
         formFields={formFields}
       >
