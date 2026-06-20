@@ -4,6 +4,19 @@ import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 import { Manager, Tenant } from "@/types/prismaTypes";
 import { createNewUserInDatabase } from "@/lib/utils";
 
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+
+type AuthUser = {
+  CognitoInfo: Awaited<ReturnType<typeof getCurrentUser>>;
+  userInfo: Tenant | Manager;
+  userRole: "manager" | "tenant";
+};
+
+const toQueryError = (error: any): FetchBaseQueryError => ({
+  status: error.status || "FETCH_ERROR",
+  error: error instanceof Error ? error.message : "Failed to fetch user data",
+});
+
 export const api = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -24,20 +37,22 @@ export const api = createApi({
   reducerPath: "api",
   tagTypes: [],
   endpoints: (build) => ({
-    getAuthUser: build.query<User, void>({
+    getAuthUser: build.query<AuthUser, void>({
       queryFn: async (_, _queryApi, _extraOptions, fetchWithBQ) => {
         try {
           const session = await fetchAuthSession();
           const { idToken } = session.tokens ?? {};
           const user = await getCurrentUser();
-          const userRole = idToken?.payload["custom:role"] as string;
+          const userRole = idToken?.payload["custom:role"] as
+            | "manager"
+            | "tenant";
 
           const endpoint =
             userRole === "manager"
               ? `/managers/${user.userId}`
               : `/tenants/${user.userId}`;
 
-          let userDetailsResponse = (await fetchWithBQ(endpoint)) as any;
+          let userDetailsResponse = await fetchWithBQ(endpoint);
 
           // if user doesn't exist in the database, create a new user
           if (
@@ -56,15 +71,15 @@ export const api = createApi({
 
           return {
             data: {
-              cognitoInfo: {
+              CognitoInfo: {
                 ...user,
               },
               userInfo: userDetailsResponse.data as Tenant | Manager,
               userRole,
             },
           };
-        } catch (error: any) {
-          return { error: error.message || "Failed to fetch user data" };
+        } catch (error: unknown) {
+          return { error: toQueryError(error) };
         }
       },
     }),
