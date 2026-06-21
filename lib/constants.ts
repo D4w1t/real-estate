@@ -110,7 +110,7 @@ export const PropertyTypeIcons: Record<PropertyTypeEnum, LucideIcon> = {
   Cottage: Trees,
 };
 
-export const NAVBAR_HEIGHT = 44; // in pixels
+export const NAVBAR_HEIGHT = 49; // in pixels
 
 // Test users for development
 export const testUsers = {

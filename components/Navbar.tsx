@@ -1,23 +1,28 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { signOut } from "aws-amplify/auth";
 
-import { NAVBAR_HEIGHT } from "@/lib/constants";
-import { Button } from "./ui/button";
-
 import { useGetAuthUserQuery } from "@/state/api";
+
 import { Bell, MessageCircle, Plus, Search } from "lucide-react";
+
+/* UI Components */
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { SidebarTrigger } from "./ui/sidebar";
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+
+import { NAVBAR_HEIGHT } from "@/lib/constants";
 
 const Navbar = () => {
   const { data: authUser, isLoading } = useGetAuthUserQuery();
