@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import Navbar from "@/components/Navbar";
@@ -19,29 +19,26 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [isLoading, setIsLoading] = useState(true);
+  const userRole = authUser?.userRole?.toLowerCase() as
+    | "manager"
+    | "tenant"
+    | undefined;
+
+  const hasRouteMismatch =
+    !!userRole &&
+    ((userRole === "manager" && pathname.startsWith("/tenants")) ||
+      (userRole === "tenant" && pathname.startsWith("/managers")));
 
   useEffect(() => {
-    if (authUser) {
-      const userRole = authUser.userRole?.toLowerCase();
-
-      if (
-        (userRole === "manager" && pathname.startsWith("/tenants")) ||
-        (userRole === "tenant" && pathname.startsWith("/managers"))
-      ) {
-        router.push(
-          userRole === "manager"
-            ? "/managers/properties"
-            : "/tenants/favorites",
-          { scroll: false },
-        );
-      } else {
-        setIsLoading(false);
-      }
+    if (hasRouteMismatch && userRole) {
+      router.replace(
+        userRole === "manager" ? "/managers/properties" : "/tenants/favorites",
+        { scroll: false },
+      );
     }
-  }, [authUser, router, pathname]);
+  }, [hasRouteMismatch, userRole, router]);
 
-  if (authLoading || isLoading) {
+  if (authLoading || hasRouteMismatch) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-primary-500"></div>
