@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +25,11 @@ const SettingsForm = ({
     defaultValues: initialData,
   });
 
+  // Reset form values when initialData changes (e.g., after saving)
+  useEffect(() => {
+    if (!editMode) form.reset(initialData);
+  }, [initialData, editMode, form]);
+
   const { isSubmitting } = form.formState;
 
   const toggleEditMode = () => {
@@ -35,8 +40,15 @@ const SettingsForm = ({
   };
 
   const handleSubmit = async (data: SettingsFormData) => {
-    await onSubmit(data);
-    setEditMode(false);
+    try {
+      await onSubmit(data);
+      form.reset(data);
+      setEditMode(false);
+    } catch (error) {
+      // Keep the form in edit mode if there's an error during submission
+      setEditMode(true);
+      throw error;
+    }
   };
 
   return (

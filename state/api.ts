@@ -82,6 +82,14 @@ export const api = createApi({
           return { error: toQueryError(error) };
         }
       },
+      providesTags: (result) =>
+        result
+          ? [
+              {
+                type: result.userRole === "manager" ? "Managers" : "Tenants",
+              },
+            ]
+          : [],
     }),
 
     updateTenantSettings: build.mutation<
@@ -89,11 +97,11 @@ export const api = createApi({
       { cognitoId: string } & Partial<Tenant>
     >({
       query: ({ cognitoId, ...updatedTenant }) => ({
-        url: `tenants/${cognitoId}`,
+        url: `/tenants/${cognitoId}`,
         method: "PUT",
         body: updatedTenant,
       }),
-      invalidatesTags: (result) => [{ type: "Tenants", id: result?.id }],
+      invalidatesTags: ["Tenants"],
     }),
 
     updateManagerSettings: build.mutation<
@@ -101,11 +109,11 @@ export const api = createApi({
       { cognitoId: string } & Partial<Manager>
     >({
       query: ({ cognitoId, ...updatedManager }) => ({
-        url: `managers/${cognitoId}`,
+        url: `/managers/${cognitoId}`,
         method: "PUT",
         body: updatedManager,
       }),
-      invalidatesTags: (result) => [{ type: "Managers", id: result?.id }],
+      invalidatesTags: ["Managers"],
     }),
   }),
 });
